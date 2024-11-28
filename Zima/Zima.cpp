@@ -1,20 +1,80 @@
-﻿// Zima.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
-//
+﻿#include <windows.h>
 
-#include <iostream>
+// Function prototype for the window procedure
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-int main()
+// Entry point for a Windows application
+int WINAPI WinMain(
+    HINSTANCE hInstance,       // Handle to the current instance
+    HINSTANCE hPrevInstance,   // Handle to the previous instance (unused)
+    LPSTR     lpCmdLine,       // Command line arguments
+    int       nCmdShow)        // Controls how the window is to be shown
 {
-    std::cout << "Hello World!\n";
+    // Define a window class name
+    const char CLASS_NAME[] = "Sample Window Class";
+
+    // Initialize a WNDCLASS structure
+    WNDCLASS wc = { 0 };
+
+    wc.lpfnWndProc = WindowProc;      // Pointer to the window procedure
+    wc.hInstance = hInstance;       // Handle to the instance
+    wc.lpszClassName = CLASS_NAME;      // Window class name
+
+    // Register the window class
+    if (!RegisterClass(&wc))
+    {
+        MessageBox(NULL, "Window Registration Failed!", "Error", MB_ICONERROR | MB_OK);
+        return 0;
+    }
+
+    // Create the window
+    HWND hwnd = CreateWindowEx(
+        0,                          // Optional window styles
+        CLASS_NAME,                 // Window class
+        "Hello, WinAPI!",           // Window title
+        WS_OVERLAPPEDWINDOW,        // Window style
+
+        // Size and position
+        CW_USEDEFAULT, CW_USEDEFAULT, 500, 400,
+
+        NULL,       // Parent window    
+        NULL,       // Menu
+        hInstance,  // Instance handle
+        NULL        // Additional application data
+    );
+
+    if (hwnd == NULL)
+    {
+        MessageBox(NULL, "Window Creation Failed!", "Error", MB_ICONERROR | MB_OK);
+        return 0;
+    }
+
+    // Display the window
+    ShowWindow(hwnd, nCmdShow);
+
+    // Run the message loop
+    MSG msg = { 0 };
+    while (GetMessage(&msg, NULL, 0, 0) > 0)
+    {
+        TranslateMessage(&msg);    // Translate virtual-key messages
+        DispatchMessage(&msg);     // Dispatch the message to the window procedure
+    }
+
+    return (int)msg.wParam;
 }
 
-// Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
-// Отладка программы: F5 или меню "Отладка" > "Запустить отладку"
+// Window procedure: handles messages sent to the window
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    switch (uMsg)
+    {
+    case WM_DESTROY:
+        PostQuitMessage(0);    // Post a quit message and return
+        return 0;
 
-// Советы по началу работы 
-//   1. В окне обозревателя решений можно добавлять файлы и управлять ими.
-//   2. В окне Team Explorer можно подключиться к системе управления версиями.
-//   3. В окне "Выходные данные" можно просматривать выходные данные сборки и другие сообщения.
-//   4. В окне "Список ошибок" можно просматривать ошибки.
-//   5. Последовательно выберите пункты меню "Проект" > "Добавить новый элемент", чтобы создать файлы кода, или "Проект" > "Добавить существующий элемент", чтобы добавить в проект существующие файлы кода.
-//   6. Чтобы снова открыть этот проект позже, выберите пункты меню "Файл" > "Открыть" > "Проект" и выберите SLN-файл.
+        // You can handle more messages here (e.g., WM_PAINT, WM_SIZE)
+
+    default:
+        return DefWindowProc(hwnd, uMsg, wParam, lParam); // Default handling
+    }
+}
